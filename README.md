@@ -1,4 +1,5 @@
 # drivers_PZ_3
+## 1. Скомпилировать символьный драйвер
 Компиляция модуля ядра:
 ```
 nano hello.c
@@ -20,6 +21,7 @@ warning: the compiler differs from the one used to build the kernel
 Skipping BTF generation for /home/drivers/linux-6.8/driver/hello.ko due to unavailability of vmlinux
 make[1]: Leaving directory '/usr/src/linux-headers-6.8.0-79-generic'
 ```
+## 2. Вставить ядро
 Загрузка модуля в ядро:
 ```
 sudo insmod hello.ko
@@ -57,10 +59,11 @@ cat /proc/devices | grep foo
 ```
 240 foo
 ```
+## 3. Создать специальное файловое устройство
 ```
 sudo mknod -m 660 /dev/foo c 240 0
 ```
-Проверка:
+Проверка создания:
 ```
 ls -l /dev/foo
 ```
@@ -68,16 +71,16 @@ ls -l /dev/foo
 ```
 crw-rw---- 1 root root 240, 0 Sep 22 09:10 /dev/foo
 ```
+## 4. Написать приложение для открытия специального файлового устройства
 Написание и запуск пользовательского приложения:
 ```C
-// test_app.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 int main() {
-    const char* device = "/dev/foo";  // ← Должно совпадать с именем, которое ты создала через mknod
+    const char* device = "/dev/foo";
     int fd = open(device, O_RDWR);
 
     if (fd < 0) {
@@ -87,15 +90,13 @@ int main() {
 
     printf("Successfully opened %s with fd = %d\n", device, fd);
 
-    // Можно добавить read/write, если драйвер их поддерживает
-    // Но даже просто open/close — уже выполняет задание
-
     close(fd);
     printf("Device closed.\n");
 
     return 0;
 }
 ```
+Компиляция и запуск:
 ```
 gcc -o app app.c
 sudo ./app

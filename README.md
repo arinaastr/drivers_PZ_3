@@ -96,6 +96,7 @@ int main() {
     return 0;
 }
 ```
+```
 gcc -o app app.c
 sudo ./app
 ```
